@@ -9,8 +9,8 @@ import java.net.URL;
 public class HttpUtil {
 
 	public static void sendHttpRequest(final String address, final HttpCallBaskListener listener){
-		
 		new Thread(new Runnable() {
+			@Override
 			public void run() {
 				HttpURLConnection connection = null;
 				try {
@@ -34,6 +34,7 @@ public class HttpUtil {
 						listener.onFinish(response.toString());
 				} catch (Exception e) {
 					// TODO: handle exception
+					System.out.println(e.getMessage());
 					if (listener != null) {
 						listener.onError(e);
 					}

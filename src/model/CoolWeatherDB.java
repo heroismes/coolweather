@@ -41,7 +41,7 @@ public class CoolWeatherDB {
 		}
 	}
 	//获取数据库中的省份数据
-	public List<Province> getProvince(){
+	public List<Province> loadProvinces(){
 		List<Province> list = new ArrayList<Province>();
 		Cursor cursor = database.query("Province", null, null, null, null, null, null);
 		if(cursor.moveToFirst()){
