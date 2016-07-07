@@ -25,16 +25,18 @@ public class HttpUtil {
 					
 					StringBuilder response = new StringBuilder();
 					String line;
+					//line = reader.readLine();
 					while ((line = reader.readLine()) != null) {
 						response.append(line);
+						
 					}
-					
+					reader.close();
+					inputStream.close();
 					if(listener != null)
 						//回调函数处理
 						listener.onFinish(response.toString());
 				} catch (Exception e) {
 					// TODO: handle exception
-					System.out.println(e.getMessage());
 					if (listener != null) {
 						listener.onError(e);
 					}
@@ -42,6 +44,7 @@ public class HttpUtil {
 				}finally {
 					if(connection != null)
 						connection.disconnect();
+					
 				}
 			}
 		}).start();
