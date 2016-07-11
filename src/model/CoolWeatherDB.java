@@ -31,6 +31,50 @@ public class CoolWeatherDB {
 			coolWeatherDB = new CoolWeatherDB(context);
 		return coolWeatherDB;
 	}
+	//保存关注城市的天气信息
+	public void saveWeatherInfo(WeatherInfo weatherInfo){
+		if (weatherInfo != null && !isExist(weatherInfo.getWeatherCode())) {
+			ContentValues values = new ContentValues();
+			values.put("country_name", weatherInfo.getCountryName());
+			values.put("weather_code", weatherInfo.getWeatherCode());
+			values.put("high_temp", weatherInfo.getHighTemp());
+			values.put("low_temp", weatherInfo.getLowTemp());
+			values.put("weather_type", weatherInfo.getWeatherType());
+			
+			database.insert("WeatherInfo", null, values);
+		}
+	}
+	//获取用户关注的天气信息
+	public List<WeatherInfo> loadWeatherInfo(){
+		List<WeatherInfo> list = new ArrayList<WeatherInfo>();
+		Cursor cursor = database.query("WeatherInfo", null, null, null, null, null, null);
+		if (cursor.moveToFirst()) {
+			do {
+				WeatherInfo weatherInfo = new WeatherInfo();
+				weatherInfo.setCountryName(cursor.getString(cursor.getColumnIndex("country_name")));
+				weatherInfo.setId(cursor.getInt(cursor.getColumnIndex("id")));
+				weatherInfo.setHighTemp(cursor.getString(cursor.getColumnIndex("high_temp")));
+				weatherInfo.setLowTemp(cursor.getString(cursor.getColumnIndex("low_temp")));
+				weatherInfo.setWeatherCode(cursor.getString(cursor.getColumnIndex("weather_code")));
+				weatherInfo.setWeatherType(cursor.getString(cursor.getColumnIndex("weather_type")));
+				list.add(weatherInfo);
+			} while (cursor.moveToNext());
+		}
+		
+		if (cursor != null) {
+			cursor.close();
+		}
+		
+		return list;
+	}
+	//检查该城市是否已经关注
+	private boolean isExist(String weatherCode){
+		Cursor cursor = database.query("WeatherInfo", null, "weather_code = ?", new String[] {weatherCode}, null, null, null);
+		if (cursor.moveToFirst()) {
+			return true;
+		}
+		return false;
+	}
 	//保存省份数据
 	public void saveProvince(Province province){
 		if (province != null) {
@@ -40,6 +84,7 @@ public class CoolWeatherDB {
 			database.insert("Province", null, values);
 		}
 	}
+	
 	//获取数据库中的省份数据
 	public List<Province> loadProvinces(){
 		List<Province> list = new ArrayList<Province>();

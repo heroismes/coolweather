@@ -16,6 +16,7 @@ import model.City;
 import model.CoolWeatherDB;
 import model.Country;
 import model.Province;
+import model.WeatherInfo;
 
 public class Utility {
 
@@ -85,11 +86,15 @@ public class Utility {
 			JSONObject jsonObject = weatherInfo.getJSONObject("data");
 			JSONArray fiveDayInfo = jsonObject.getJSONArray("forecast");
 			JSONObject todayInfo = fiveDayInfo.getJSONObject(0);
+			String roomTemp = jsonObject.getString("wendu");
+			String environment = jsonObject.getString("ganmao");
 			String cityName = jsonObject.getString("city");
+			String week = todayInfo.getString("date").split("日")[1];
 			String temp1 = todayInfo.getString("high").split(" ")[1];
 			String temp2 = todayInfo.getString("low").split(" ")[1];
 			String weatherDesp = todayInfo.getString("type");
-			saveWeatherInfo(context,cityName,weatherCode,temp1,temp2,weatherDesp);
+			//saveCarfuWeather(weatherCode, cityName, temp1, temp2, CoolWeatherDB db);
+			saveWeatherInfo(context,cityName,weatherCode,temp1,temp2,weatherDesp,week);
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -97,7 +102,7 @@ public class Utility {
 	}
 	
 	//将返回的天气信息储存到sharedPreferences中
-	public static void saveWeatherInfo(Context context,String cityName,String weatherCode,String temp1,String temp2,String weatherDesp){
+	public static void saveWeatherInfo(Context context,String cityName,String weatherCode,String temp1,String temp2,String weatherDesp,String week){
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
@@ -109,6 +114,21 @@ public class Utility {
 		editor.putString("weather_desp", weatherDesp);
 		editor.putString("publish_time", timeFormat.format(new Date()));
 		editor.putString("current_date", simpleDateFormat.format(new Date()));
+		editor.putString("week", week);
 		editor.commit();
+	}
+	
+	//把关注城市的天气代码存入数据库
+	public static void saveCarfuWeather(String weatherCode,String countryName,String highTemp,String lowTemp,String weatherType,CoolWeatherDB db){
+		if (!TextUtils.isEmpty(weatherCode)) {
+			WeatherInfo weatherInfo = new WeatherInfo();
+			weatherInfo.setCountryName(countryName);
+			weatherInfo.setWeatherCode(weatherCode);
+			weatherInfo.setHighTemp(highTemp);
+			weatherInfo.setLowTemp(lowTemp);
+			weatherInfo.setWeatherType(weatherType);
+			
+			db.saveWeatherInfo(weatherInfo);
+		}
 	}
 }

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    android:orientation="vertical">
+    
+    <RelativeLayout 
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#484E61">
+        <Button 
+            android:id="@+id/switch_city"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/home"/>
+        <TextView 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textColor="#fff"
+            android:textSize="24sp"
+            android:text="设置"/>
+        <Button 
+            android:id="@+id/setting"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/setting"/>
+  	 </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            >
+
+            <RelativeLayout
+            android:id="@+id/check"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_weight="1"
+                android:textSize="18sp"
+                android:text="自动更新天气信息" />
+            
+            <Button
+                android:id="@+id/update_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_gravity="center_vertical"
+                android:enabled="false"
+                android:textSize="18sp"
+                android:text="确定" />
+
+            <EditText 
+                android:id="@+id/update_rate"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:enabled="false"
+                android:inputType="number"
+                android:hint="请输入整数，单位为小时"
+                android:layout_toLeftOf="@id/update_time"/>
+            <CheckBox
+                android:id="@+id/auto_update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_toLeftOf="@id/update_rate"/> 
+        </RelativeLayout>
+
+        <RelativeLayout 
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:layout_below="@id/check"
+           >
+            <TextView 
+                android:id="@+id/city_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textSize="18sp"
+                android:text="关注的城市"/>
+            <ListView 
+                android:id="@+id/list_city"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/city_name"></ListView>
+        </RelativeLayout>
+   </RelativeLayout>
+</LinearLayout>
