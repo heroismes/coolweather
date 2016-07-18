@@ -85,16 +85,28 @@ public class Utility {
 			JSONObject weatherInfo = new JSONObject(response);
 			JSONObject jsonObject = weatherInfo.getJSONObject("data");
 			JSONArray fiveDayInfo = jsonObject.getJSONArray("forecast");
+			String[][] weatherInfos = new String[6][3];
+			for(int i=0;i<fiveDayInfo.length();i++){
+				JSONObject object = fiveDayInfo.getJSONObject(i);
+				//获取天气类型及温度
+				weatherInfos[i][0] = object.getString("type");
+				weatherInfos[i][1] = object.getString("high").split(" ")[1].split("℃")[0];
+				weatherInfos[i][2] = object.getString("low").split(" ")[1];
+			}
+			//获取昨天的天气信息
+			JSONObject yesWeahterInfo = jsonObject.getJSONObject("yesterday");
+			weatherInfos[5][0] = yesWeahterInfo.getString("type");
+			weatherInfos[5][1] = yesWeahterInfo.getString("high").split(" ")[1].split("℃")[0];
+			weatherInfos[5][2] = yesWeahterInfo.getString("low").split(" ")[1];
+			
 			JSONObject todayInfo = fiveDayInfo.getJSONObject(0);
-			String roomTemp = jsonObject.getString("wendu");
-			String environment = jsonObject.getString("ganmao");
+			String currentTemp = jsonObject.getString("wendu");
+			String warns = jsonObject.getString("ganmao");
 			String cityName = jsonObject.getString("city");
 			String week = todayInfo.getString("date").split("日")[1];
-			String temp1 = todayInfo.getString("high").split(" ")[1];
-			String temp2 = todayInfo.getString("low").split(" ")[1];
 			String weatherDesp = todayInfo.getString("type");
 			//saveCarfuWeather(weatherCode, cityName, temp1, temp2, CoolWeatherDB db);
-			saveWeatherInfo(context,cityName,weatherCode,temp1,temp2,weatherDesp,week);
+			saveWeatherInfo(context,cityName,weatherCode,weatherDesp,week,currentTemp,weatherInfos);
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -102,19 +114,25 @@ public class Utility {
 	}
 	
 	//将返回的天气信息储存到sharedPreferences中
-	public static void saveWeatherInfo(Context context,String cityName,String weatherCode,String temp1,String temp2,String weatherDesp,String week){
+	public static void saveWeatherInfo(Context context,String cityName,String weatherCode,String weatherDesp,String week,String currentTemp,String[][] weatherInfos){
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 		SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
 		editor.putBoolean("city_selected", true);
 		editor.putString("city_name", cityName);
 		editor.putString("weather_code", weatherCode);
-		editor.putString("temp1", temp1);
-		editor.putString("temp2", temp2);
 		editor.putString("weather_desp", weatherDesp);
+		editor.putString("cur_temp", currentTemp);
 		editor.putString("publish_time", timeFormat.format(new Date()));
 		editor.putString("current_date", simpleDateFormat.format(new Date()));
 		editor.putString("week", week);
+		
+		for(int i=0;i<weatherInfos.length;i++){
+			for(int j=0;j<weatherInfos[i].length;j++){
+				editor.putString("temp"+i+j, weatherInfos[i][j]);
+			}
+		}
+		
 		editor.commit();
 	}
 	
@@ -129,6 +147,26 @@ public class Utility {
 			weatherInfo.setWeatherType(weatherType);
 			
 			db.saveWeatherInfo(weatherInfo);
+		}
+	}
+	
+	//更新用户关注的城市列表的天气信息
+	public static void updateWeatherInfo(String weatherCode,String response,CoolWeatherDB db){
+		try {
+			JSONObject weatherInfo = new JSONObject(response);
+			JSONObject jsonObject = weatherInfo.getJSONObject("data");
+			JSONArray fiveDayInfo = jsonObject.getJSONArray("forecast");
+			JSONObject todayInfo = fiveDayInfo.getJSONObject(0);
+			
+			String temp1 = todayInfo.getString("high").split(" ")[1];
+			String temp2 = todayInfo.getString("low").split(" ")[1];
+			String weatherDesp = todayInfo.getString("type");
+			
+			db.updateWeatherInfo(weatherCode, temp1, temp2, weatherDesp);
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
 		}
 	}
 }

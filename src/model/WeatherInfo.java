@@ -8,6 +8,7 @@ public class WeatherInfo {
 	private String highTemp;
 	private String lowTemp;
 	private String weatherType;
+	private String updateTime;
 	
 	public int getId(){
 		return id;
@@ -15,6 +16,14 @@ public class WeatherInfo {
 	
 	public void setId(int id){
 		this.id = id;
+	}
+	
+	public String getUpdateTime(){
+		return updateTime;
+	}
+	
+	public void setUpdateTime(String updateTime){
+		this.updateTime = updateTime;
 	}
 	
 	public String getWeatherType(){

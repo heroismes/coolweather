@@ -28,7 +28,7 @@ import util.HttpCallBaskListener;
 import util.HttpUtil;
 import util.Utility;
 
-public class ChooseAreaActivity extends Activity {
+public class ChooseAreaActivity extends BaseActivity {
 
 	public static final int LEVEL_PROVINCE = 0;
 	public static final int LEVEL_CITY = 1;

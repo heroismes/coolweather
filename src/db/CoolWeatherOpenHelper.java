@@ -14,7 +14,7 @@ public class CoolWeatherOpenHelper extends SQLiteOpenHelper {
 	//县级建表语句
 	private static final String CREATE_COUNTRY = "create table Country(id integer primary key autoincrement,country_name text,country_code text,city_id integer)";
 	//保存用户关注城市的天气
-	private  static final String CREATE_WEATHERINFO = "create table WeatherInfo(id integer primary key autoincrement,country_name text,high_temp text,low_temp text,weather_type text,weather_code text)";
+	private  static final String CREATE_WEATHERINFO = "create table WeatherInfo(id integer primary key autoincrement,country_name text,high_temp text,low_temp text,weather_type text,weather_code text,update_time text)";
 	public CoolWeatherOpenHelper(Context context, String name, CursorFactory factory, int version) {
 		super(context, name, factory, version);
 		// TODO Auto-generated constructor stub

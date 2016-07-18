@@ -1,23 +1,20 @@
 package activity;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.coolweather.app.R;
 
-import android.R.integer;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DownloadManager.Query;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.text.AndroidCharacter;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -30,10 +27,12 @@ import model.CoolWeatherDB;
 import model.WeatherInfo;
 import android.widget.EditText;
 import android.widget.ListView;
-import receiver.AutoUpdateReceiver;
 import service.AutoUpdateService;
+import util.HttpCallBaskListener;
+import util.HttpUtil;
+import util.Utility;
 
-public class SettingActivity extends Activity {
+public class SettingActivity extends BaseActivity {
 	private CheckBox autoUpdate;
 	private EditText updateRate;
 	private ListView listCity;
@@ -45,6 +44,10 @@ public class SettingActivity extends Activity {
 	private List<WeatherInfo> weatherInfoList;
 	
 	private Button submit;
+	private Button addCity;
+	private Button backWeather;
+	
+	SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
@@ -57,18 +60,16 @@ public class SettingActivity extends Activity {
 		updateRate = (EditText) findViewById(R.id.update_rate);
 		autoUpdate = (CheckBox) findViewById(R.id.auto_update);
 		submit = (Button) findViewById(R.id.update_time);
+		addCity = (Button) findViewById(R.id.add);
+		backWeather = (Button) findViewById(R.id.back);
 		//获取数据库实例
 		coolWeatherDB = CoolWeatherDB.getInstance(this);
 		//获取关注城市列表
 		listCity = (ListView) findViewById(R.id.list_city);
 		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, dataList);
 		listCity.setAdapter(adapter);
-		//获取数据源信息
-		weatherInfoList = coolWeatherDB.loadWeatherInfo();
-		for(WeatherInfo weatherInfo:weatherInfoList){
-			String info = weatherInfo.getCountryName() + "        " + weatherInfo.getWeatherType() + "         " + weatherInfo.getHighTemp() + "/" + weatherInfo.getLowTemp();
-			dataList.add(info);
-		}
+		//加载数据库中的天气信息
+		loadWeatherInfo();
 		
 		if (preferences.getBoolean("auto_update", false)) {
 			autoUpdate.setChecked(preferences.getBoolean("auto_update", false));
@@ -82,6 +83,26 @@ public class SettingActivity extends Activity {
 		}else {
 			updateRate.setText("");
 		}
+		backWeather.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				//返回天气页面
+				onBackPressed();
+			}
+		});
+		
+		addCity.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(SettingActivity.this,ChooseAreaActivity.class);
+				intent.putExtra("from_weather_activity", true);
+				startActivity(intent);
+				finish();
+			}
+		});
 		
 		listCity.setOnItemClickListener(new OnItemClickListener() {
 
@@ -146,6 +167,10 @@ public class SettingActivity extends Activity {
 				}else {
 					updateRate.setEnabled(false);
 					submit.setEnabled(false);
+					//把复选框的值存入sharedPreferences中
+					editor.putBoolean("auto_update", autoUpdate.isChecked());
+					editor.putInt("update_rate", 0);
+					editor.commit();
 					Intent intent = new Intent(SettingActivity.this,AutoUpdateService.class);
 					stopService(intent);
 				}
@@ -154,5 +179,60 @@ public class SettingActivity extends Activity {
 		
 		
 	}
+	//加载天气信息
+	private void loadWeatherInfo(){
+		weatherInfoList = coolWeatherDB.loadWeatherInfo();
+		
+		if (weatherInfoList.size() > 0) {
+			WeatherInfo wInfo = weatherInfoList.get(0);
+			try {
+				Date updateTime = (Date) sFormat.parse(wInfo.getUpdateTime());
+				long mtime = new java.util.Date().getTime() - updateTime.getTime();
+				//得出上次更新距离现在的时间
+				long hour = mtime/1000/60/60;
+				//如果距离上次更新的时间间隔小于2则不更新
+				if (hour > 2) {
+					for(WeatherInfo weatherInfo:weatherInfoList){
+						String address = "http://wthrcdn.etouch.cn/weather_mini?citykey=" + weatherInfo.getWeatherCode();
+						updateWeatherInfo(address);
+					}
+				}
+				//查询天气信息
+				queryWeatherInfo();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	
+	//查询数据库中的天气信息
+	private void queryWeatherInfo(){
+		weatherInfoList = coolWeatherDB.loadWeatherInfo();
+		
+		for(WeatherInfo weatherInfo:weatherInfoList){
+			String info = weatherInfo.getCountryName() + "        " + weatherInfo.getWeatherType() + "         " + weatherInfo.getHighTemp() + "/" + weatherInfo.getLowTemp();
+			//获取适配器的数据
+			dataList.add(info);
+		}
+	}
+	
+	//更新城市列表中的天气信息
+	private void updateWeatherInfo(final String address){
+		HttpUtil.sendHttpRequest(address, new HttpCallBaskListener() {
+			
+			@Override
+			public void onFinish(String response) {
+				// TODO Auto-generated method stub
+				String[] mString = address.split("=");
+				Utility.updateWeatherInfo(mString[1], response, coolWeatherDB);
+			}
+			
+			@Override
+			public void onError(Exception e) {
+				// TODO Auto-generated method stub
+				e.printStackTrace();
+			}
+		});
+	}
 }

@@ -1,6 +1,8 @@
 package model;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import android.content.ContentValues;
@@ -8,6 +10,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.VoicemailContract.Voicemails;
+import android.text.TextUtils;
 import db.CoolWeatherOpenHelper;
 
 public class CoolWeatherDB {
@@ -18,6 +21,7 @@ public class CoolWeatherDB {
 	private static final int VERSION = 1;
 	private static CoolWeatherDB coolWeatherDB;
 	private SQLiteDatabase database;
+	SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
 	//构造函数私有化
 	private CoolWeatherDB(Context context){
@@ -40,6 +44,8 @@ public class CoolWeatherDB {
 			values.put("high_temp", weatherInfo.getHighTemp());
 			values.put("low_temp", weatherInfo.getLowTemp());
 			values.put("weather_type", weatherInfo.getWeatherType());
+			//存储当前时间
+			values.put("update_time", sFormat.format(new Date()));
 			
 			database.insert("WeatherInfo", null, values);
 		}
@@ -57,6 +63,7 @@ public class CoolWeatherDB {
 				weatherInfo.setLowTemp(cursor.getString(cursor.getColumnIndex("low_temp")));
 				weatherInfo.setWeatherCode(cursor.getString(cursor.getColumnIndex("weather_code")));
 				weatherInfo.setWeatherType(cursor.getString(cursor.getColumnIndex("weather_type")));
+				weatherInfo.setUpdateTime(cursor.getString(cursor.getColumnIndex("update_time")));
 				list.add(weatherInfo);
 			} while (cursor.moveToNext());
 		}
@@ -66,6 +73,18 @@ public class CoolWeatherDB {
 		}
 		
 		return list;
+	}
+	//更新数据库中的天气信息
+	public void updateWeatherInfo(String weatherCode,String highTemp,String lowTemp,String weatherType ){
+		if (!TextUtils.isEmpty(weatherCode)) {
+			ContentValues values = new ContentValues();
+			values.put("high_temp", highTemp);
+			values.put("low_temp", lowTemp);
+			values.put("weather_type", weatherType);
+			values.put("update_time", sFormat.format(new Date()));
+			
+			database.update("WeatherInfo", values, "weather_code = ?", new String[]{weatherCode});
+		}
 	}
 	//检查该城市是否已经关注
 	private boolean isExist(String weatherCode){
